@@ -1,8 +1,10 @@
 /*
-
-ACLARACIÓN: productos una view que hice que se ve igual al products del der 
-	(es products + el campo description (que sale de joinear products con product_types))
-
+	Notas: 
+		** productos una view que hice que se ve igual al products del der 
+				(es products + el campo description (que sale de joinear products con product_types))
+		** si no me reconoce las tablas, poner en el código:
+					USE [stores7new]
+				y funca
 */
 
 /*
@@ -211,3 +213,20 @@ SELECT C.customer_num, fname, lname, paid_date AS fecha_de_pago, SUM(total_price
 								WHERE O1.customer_num = C.customer_num AND O1.order_date < O.order_date			
 									)
 	ORDER BY 4 DESC
+
+/*
+6)
+Se desean saber los fabricantes que vendieron mayor cantidad de un mismo
+producto que la competencia con la cantidad vendida y su precio total. Tener en
+cuenta que puede existir un único producto que no sea fabricado por algún otro.
+No se permite utilizar funciones, ni tablas temporales
+*/
+
+SELECT manu_code, stock_num, SUM(quantity) AS cant_vendida, SUM(total_price) AS precio_total_vendido
+	FROM items I1
+	GROUP BY manu_code, stock_num
+	HAVING SUM(quantity) > ALL (SELECT SUM(quantity)
+								FROM items I2
+								GROUP BY manu_code, stock_num
+								HAVING I2.manu_code != I1.manu_code AND I2.stock_num = I1.stock_num
+							)
