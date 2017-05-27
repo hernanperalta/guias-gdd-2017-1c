@@ -6,20 +6,22 @@ SELECT P.stock_num, manu_code, description, unit_code, unit_price
 		ON(P.stock_num = T.stock_num)
 
 -- 1) 
+
 SELECT M.manu_code, manu_name, lead_time, monto
 	FROM manufact M LEFT JOIN (SELECT manu_code, SUM(total_price) monto FROM items GROUP BY manu_code) V
 		ON(V.manu_code = M.manu_code)
 
--- Otra solución es:
+-- Otra soluciÃ³n es:
 
 SELECT M.manu_code, manu_name, lead_time, SUM(total_price) monto
 	FROM manufact M LEFT JOIN items I
 		ON(I.manu_code = M.manu_code)
 	GROUP BY M.manu_code, manu_name, lead_time
 
--- Pero el GROUP BY no tiene mucho sentido. Me parece que es más performante la primera
+-- Pero el GROUP BY no tiene mucho sentido. Me parece que es mÃ¡s performante la primera
 
 -- 2) 
+
 SELECT P.stock_num, description, M.manu_code manu_code1, P2.manu_code manu_code2
 	FROM manufact M JOIN products P
 		ON(P.manu_code = M.manu_code)
@@ -71,9 +73,9 @@ SELECT C.customer_num, fname, lname, COUNT(order_num) cant_ordenes
 SELECT C.customer_num, fname, lname, (SELECT COUNT(order_num) FROM orders O WHERE O.customer_num = C.customer_num HAVING COUNT(order_num) > 1) cant_ordenes
 	FROM customer C
 
--- 4) No contemplé el caso de que haya una orden sin ítems (lo que haría cambiar la cantidad de órdenes)
+-- 4) No contemplÃ© el caso de que haya una orden sin Ã­tems (lo que harÃ­a cambiar la cantidad de Ã³rdenes)
 
-SELECT order_num 'Número de orden', SUM(total_price) Total
+SELECT order_num 'NÃºmero de orden', SUM(total_price) Total
 	FROM items
 	GROUP BY order_num
 	HAVING SUM(total_price) < (SELECT SUM(total_price) / COUNT(order_num)
