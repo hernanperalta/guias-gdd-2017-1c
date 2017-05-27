@@ -6,7 +6,7 @@ tengan órdenes. Ordenar el resultado por número de cliente.
 SELECT C.customer_num, company, order_num
 	FROM customer C JOIN orders O
 	ON(C.customer_num = O.customer_num)
-	ORDER BY customer_num;*/
+	ORDER BY customer_num;
  
 /*
 2) 
@@ -19,7 +19,7 @@ Descripción del producto (stock.description), Código del fabricante
 SELECT order_num, item_num, description, I.manu_code, quantity, total_price
 	FROM items I JOIN products P ON(I.stock_num = P.stock_num AND I.manu_code = P.manu_code)
 	JOIN product_types T ON(P.stock_num = T.stock_num)
-	WHERE order_num = 1004*/
+	WHERE order_num = 1004
 
 /*
 3) 
@@ -34,7 +34,7 @@ SELECT order_num, item_num, description, I.manu_code, quantity, total_price, man
 		ON(I.stock_num = P.stock_num AND I.manu_code = P.manu_code)
 			JOIN product_types T ON(P.stock_num = T.stock_num)
 				JOIN manufact M ON(M.manu_code = P.manu_code)
-	WHERE order_num = 1004*/
+	WHERE order_num = 1004
 
 /*
 4)
@@ -43,7 +43,7 @@ los siguientes: número de orden, número de cliente, nombre, apellido y compañía.
 */
 
 SELECT order_num, O.customer_num, fname, lname, company
-	FROM customer C JOIN orders O ON(O.customer_num = C.customer_num)*/
+	FROM customer C JOIN orders O ON(O.customer_num = C.customer_num)
 
 /*
 5)
@@ -53,7 +53,7 @@ por cliente.
 */
 
 SELECT DISTINCT O.customer_num, fname, lname, company
-	FROM customer C JOIN orders O ON(O.customer_num = C.customer_num)*/
+	FROM customer C JOIN orders O ON(O.customer_num = C.customer_num)
 	
 /*
 6) 
@@ -65,7 +65,7 @@ unidad (unit), precio unitario (unit_price) y Precio Junio (precio unitario + 20
 SELECT manu_name, P.stock_num, description, unit, unit_price, unit_price * 1.2 AS precio_junio
 	FROM manufact M JOIN products P ON(P.manu_code = M.manu_code)
 		JOIN units U ON(U.unit_code = P.unit_code)
-			JOIN product_types T ON(P.stock_num = T.stock_num)*/
+			JOIN product_types T ON(P.stock_num = T.stock_num)
 
 /*
 7) 
@@ -77,7 +77,7 @@ cantidad (quantity) y precio total (total_price).
 SELECT item_num, description, quantity, total_price
 	FROM items I JOIN products P ON(I.stock_num = P.stock_num AND I.manu_code = P.manu_code)
 		JOIN product_types T ON(T.stock_num = P.stock_num)
-	WHERE I.order_num = 1004*/
+	WHERE I.order_num = 1004
 
 /*
 8) 
@@ -89,7 +89,7 @@ SELECT manu_name, lead_time, O.order_num
 	FROM orders O JOIN items I ON(O.order_num = I.order_num)
 		JOIN products P ON(I.stock_num = P.stock_num AND I.manu_code = P.manu_code)
 			JOIN manufact M ON(M.manu_code = P.manu_code)
-	WHERE O.customer_num = 104*/
+	WHERE O.customer_num = 104
 
 /*
 9) 
@@ -102,7 +102,7 @@ total (total_price).
 SELECT O.order_num, order_date, item_num, description, quantity, total_price
 	FROM orders O JOIN items I ON (O.order_num = I.order_num)
 		JOIN products P ON(I.stock_num = P.stock_num AND I.manu_code = P.manu_code)
-			JOIN product_types T ON(T.stock_num = P.stock_num)*/
+			JOIN product_types T ON(T.stock_num = P.stock_num)
 
 /*
 10) 
