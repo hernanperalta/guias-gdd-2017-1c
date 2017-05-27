@@ -1,5 +1,4 @@
-/*
-Hice la vista productos para no tener que andar joineando products con product_types. La vista productos es como la de products que esta en el DER
+-- Hice la vista productos para no tener que andar joineando products con product_types. La vista productos es como la de products que esta en el DER
 CREATE VIEW productos
 (stock_num, manu_code, description, unit_code, unit_price)
 AS
@@ -7,10 +6,8 @@ SELECT P.stock_num, manu_code, description, unit_code, unit_price
 	FROM products P JOIN product_types T
 		ON(P.stock_num = T.stock_num)
 
-SELECT * FROM products;
-SELECT * FROM productos;*/
-
 -- 1)
+
 SELECT C.customer_num, lname + fname AS 'Nombre y apellido', SUM(total_price) 'Total del Cliente', 
 	COUNT(O.order_num) 'OCs del Cliente', (SELECT COUNT(*) FROM orders) AS 'Cant. Total OC'
 		FROM customer C JOIN orders O
@@ -24,6 +21,7 @@ HAVING COUNT(O.order_num) >= 2
 		SUM(total_price) / COUNT(O.order_num) > (SELECT SUM(total_price) / COUNT(DISTINCT order_num) from items)
 
 -- 2) a)
+
 SELECT P.stock_num, M.manu_code, description, manu_name, SUM(total_price) 'u$ por Producto', SUM(quantity) 'Unid. por Producto'
 INTO #ABC_Productos
 FROM productos P JOIN manufact M
@@ -38,11 +36,13 @@ SELECT * FROM #ABC_Productos
 DROP TABLE #ABC_Productos
 
 --2) b)
+
 SELECT *
 FROM #ABC_Productos
 ORDER BY 5 DESC, 1, 2 
 
 --3)
+
 SELECT description, MONTH(order_date) 'Mes de solicitud', lname + ', ' + fname AS 'Apellido, Nombre', 
 COUNT(O.order_num) 'Cant OC por mes', SUM(quantity) 'Unid Producto por mes', SUM(total_price) 'u$ Producto por mes'
 	FROM #ABC_Productos ABC JOIN items I
@@ -59,6 +59,7 @@ GROUP BY description, MONTH(order_date), lname + ', ' + fname
 ORDER BY 2, 1
 
 -- 4)
+
 SELECT C1.stock_num, C1.manu_code, C1.customer_num, C1.lname, C2.customer_num, C2.lname
 	FROM
 	(SELECT C.customer_num, I.stock_num, I.manu_code, lname, SUM(quantity) cantProds
@@ -79,6 +80,7 @@ SELECT C1.stock_num, C1.manu_code, C1.customer_num, C1.lname, C2.customer_num, C
 				ON(C1.stock_num = C2.stock_num AND C1.manu_code = C2.manu_code AND C1.cantProds > C2.cantProds)
 
 -- 5)
+
 SELECT TOP 1 (SELECT TOP 1 COUNT(order_num) 'Mayor cant. OCs'
 			FROM orders
 			GROUP BY customer_num
@@ -108,6 +110,7 @@ SELECT TOP 1 (SELECT TOP 1 COUNT(order_num) 'Mayor cant. OCs'
 				ORDER BY 6 ASC
 
 -- 6)
+
 SELECT SUM(total_price) total_cobrado, C.customer_num
 	FROM orders O JOIN customer C
 		ON(O.customer_num = C.customer_num)
@@ -126,6 +129,7 @@ SELECT SUM(total_price) total_cobrado, C.customer_num
 																)
 
 -- 7)
+
 SELECT P.manu_code, M.manu_name, P.stock_num, description, SUM(quantity) AS ComprasDeOtrosFabricantes
 	FROM productos P JOIN manufact M
 		ON(M.manu_code = P.manu_code)
@@ -138,7 +142,8 @@ SELECT P.manu_code, M.manu_name, P.stock_num, description, SUM(quantity) AS Comp
 	GROUP BY P.manu_code, M.manu_name, P.stock_num, description
 	HAVING SUM(quantity) < 10
 
--- 8)					
+-- 8)	
+				
 SELECT S.code 'Código Estado', S.sname 'Descripción Estado', C1.lname + ', ' + C1.fname 'Apellido, Nombre', C2.lname + ', ' + C2.fname 'Apellido, Nombre',
  monto_total1 + monto_total2 'Total Solicitado'
 	FROM customer C1 JOIN (SELECT TOP 2 C.customer_num, SUM(total_price) monto_total1
@@ -163,6 +168,7 @@ SELECT S.code 'Código Estado', S.sname 'Descripción Estado', C1.lname + ', ' + C
 						ON(S.code = C1.state)
 
 -- 9)
+
 SELECT C2.order_num, C2.customer_num, C2.order_date, DATEADD(day,1,C2.order_date + tiempo_manufact) AS fecha_modificada
 	FROM (SELECT TOP 1 O.order_num, O.customer_num, SUM(quantity) cantProds, M.lead_time AS tiempo_manufact
 			FROM orders O JOIN items I
