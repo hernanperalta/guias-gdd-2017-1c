@@ -37,9 +37,9 @@ BEGIN
 	DECLARE @manu_code CHAR(3)
 	DECLARE @quantity SMALLINT
 	DECLARE @total_price DECIMAL(8,2)
-
+	
 	FETCH items_cur INTO @item_num, @order_num, @stock_num, @manu_code, @quantity, @total_price
-
+	
 	SET @cant_items = (SELECT COUNT(*) FROM items WHERE order_num = @order_num)
 
 	IF(@estado = 'CA' AND @cant_items + @@CURSOR_ROWS > 5)
@@ -88,7 +88,7 @@ insertar los datos en la tabla manufact.
 Observaciones: el atributo leadtime deberá insertarse con un valor default 10
 El trigger deberá contemplar inserts de varias filas, ante un
 INSERT masivo (INSERT SELECT).
-*/
+*/ 
 CREATE TRIGGER insertar_fabricante
 ON ProdPorFabricante
 INSTEAD OF INSERT
@@ -125,7 +125,7 @@ de 5 clientes con estrado de CA, el trigger deberá modificar los 2 primeros en l
 tabla customer y los restantes grabarlos en la tabla customer_updates_pend.
 La tabla customer_updates_pend tendrá la misma estructura que la tabla customer
 con un atributo adicional fecha que deberá actualizarse con la fecha y hora del día.
-*/
+*/ 
 CREATE TRIGGER validar_upd_cust
 ON customer
 INSTEAD OF UPDATE
@@ -163,25 +163,17 @@ BEGIN
 	BEGIN
 		IF((SELECT COUNT(*) FROM customer WHERE state = 'CA') >= 20)
 		BEGIN
-			IF((SELECT state FROM customer WHERE customer_num = @c_num) != @state)
-			BEGIN;
-				THROW 50000, 'No se puede modificar el estado de los clientes si se supera la cuota de clientes de California', 1;
-			END;
-			ELSE
-			BEGIN
-				INSERT INTO customer_updates_pend VALUES (@c_num, 
-														  @fname, 
-														  @lname, 
-														  @company, 
-														  @adr1, 
-														  @adr2, 
-														  @city, 
-														  @state, 
-														  @z_code, 
-														  @phone, 
-														  @c_num_ref_by,
-														  GETDATE()) --creo que es mejor ponerle el GETDATE() como DEFAULT
-			END			
+			INSERT INTO customer_updates_pend VALUES (@c_num, 
+														@fname, 
+														@lname, 
+														@company, 
+														@adr1, 
+														@adr2, 
+														@city, 
+														@state, 
+														@z_code, 
+														@phone, 														  
+														GETDATE()) --creo que es mejor ponerle el GETDATE() como DEFAULT
 		END
 		ELSE
 		BEGIN
@@ -216,86 +208,7 @@ BEGIN
 	DEALLOCATE clientes_upd_cur 
 END
 
-
-create trigger temaB
-on customer
-instead of update
-AS
-BEGIN
-declare @customer_num smallint
-declare @fname varchar(15), @lname varchar(15),@city
-varchar(15)
-declare @company varchar(20),@address1 varchar(20),@address2
-varchar(20)
-declare @state char(2), @state_old char(2)
-declare @zipcode char(18)
-declare @phone varchar(18)
-
-declare c_call cursor
-for select i.*,d.state
-from inserted I join deleted d
-on (i.customer_num=d.customer_num)
-
-open c_call
-
-fetch from c_call into
-@customer_num,@fname,@lname,@company,
-@address1,@address2,@city,@state,@zipcode,@phone,@state_old
-
-while @@fetch_status=0
-BEGIN
-	if @state='CA' and @state!=@state_old
-	begin
-		if (select COUNT(*) FROM customer where state='CA')< 20
-		begin
-			UPDATE customer 
-			SET fname=@fname,
-				lname=@lname,
-				company=@company,
-				address1=@address1,
-				address2=@address2,
-				city=@city,
-				state=@state,
-				zipcode=@zipcode,
-				phone=@phone
-			WHERE customer_num=@customer_num
-		end
-		else
-		begin
-			INSERT INTO customer_updates_pend
-			VALUES (@customer_num,@fname,
-										@lname,@company,
-										@address1,
-										@address2,
-										@city,@state,@zipcode,@phone,getDate())
-		end
-	end
-	else
-	begin
-		UPDATE customer
-		SET fname=@fname,
-			lname=@lname,
-			company=@company,
-			address1=@address1,
-			address2=@address2,
-			city=@city, 
-			state=@state,
-			zipcode=@zipcode,
-			phone=@phone
-		WHERE customer_num=@customer_num
-	end
-
-	fetch NEXT from c_call into
-	@customer_num,@fname,@lname,@company,
-	@address1,@address2,@city,@state,@zipcode,@phone,@state_old
-END
-
-close c_call
-deallocate c_call
-
-END
-
-/*
+/* 
 d. Dada la siguiente vista
 */
 CREATE VIEW ProdPorFabricanteDet AS
