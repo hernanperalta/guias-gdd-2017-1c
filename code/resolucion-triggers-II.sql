@@ -15,7 +15,7 @@ más, el trigger deberá insertar los 2 primeros en la tabla ítems y el restante e
 tabla ítems_error.
 Supuesto: En el caso de un insert masivo los ítems pertenecen siempre a la misma
 órden.
-*/
+*/ 
 CREATE TRIGGER validar_ins
 ON items
 INSTEAD OF INSERT
@@ -38,11 +38,13 @@ BEGIN
 	DECLARE @quantity SMALLINT
 	DECLARE @total_price DECIMAL(8,2)
 	
+	OPEN items_cur
+
 	FETCH items_cur INTO @item_num, @order_num, @stock_num, @manu_code, @quantity, @total_price
 	
 	SET @cant_items = (SELECT COUNT(*) FROM items WHERE order_num = @order_num)
 
-	IF(@estado = 'CA' AND @cant_items + @@CURSOR_ROWS > 5)
+	IF(@estado = 'CA')
 	BEGIN
 		WHILE((SELECT COUNT(*) FROM items WHERE order_num = @order_num)<=5)
 		BEGIN
@@ -53,7 +55,7 @@ BEGIN
 		END
 		WHILE(@@FETCH_STATUS = 0)
 		BEGIN
-			INSERT INTO items_error (@item_num, @order_num, @stock_num, @manu_code, @quantity, @total_price, GETDATE())
+			INSERT INTO items_error VALUES (@item_num, @order_num, @stock_num, @manu_code, @quantity, @total_price, GETDATE())
 
 			FETCH items_cur INTO @item_num, @order_num, @stock_num, @manu_code, @quantity, @total_price
 		END
@@ -73,6 +75,158 @@ BEGIN
 	DEALLOCATE items_cur
 END
 GO
+
+---------------------------------------------------------------------------------------------
+
+create trigger Tr_temaA
+
+on items
+
+instead of insert
+
+AS
+
+BEGIN
+
+declare @stock_num smallint, @order_num smallint, @item_num
+
+smallint,
+
+@quantity smallint
+
+declare @total_price decimal(8,2)
+
+declare @manu_code char(3),@state char(2)
+
+
+
+declare c_call cursor
+
+for select i.*,state from inserted i
+
+JOIN orders o
+
+ON (i.order_num=o.order_num)
+
+JOIN customer c
+
+ON (o.customer_num=c.customer_num)
+
+open c_call
+
+fetch from c_call into
+
+@item_num,@order_num,@stock_num,@manu_code,
+
+@quantity,@total_price,@state
+
+while @@fetch_status=0
+
+BEGIN
+
+if @state='CA'
+
+begin
+
+if (select COUNT(*) FROM items where
+
+order_num=@order_num) < 5
+
+begin
+
+INSERT INTO items
+
+
+
+VALUES(@item_num,@order_num,@stock_num,@manu_code,
+
+
+
+@quantity,@total_price)
+
+
+
+end
+
+else
+
+begin
+
+INSERT INTO items_error
+
+
+
+VALUES(@item_num,@order_num,@stock_num,@manu_code,
+
+
+
+@quantity,@total_price,getDate())
+
+
+
+end
+
+
+
+end
+
+else
+
+begin
+
+INSERT INTO items
+
+
+
+VALUES(@item_num,@order_num,@stock_num,@manu_code,
+
+
+
+@quantity,@total_price)
+
+end
+
+
+
+fetch from c_call into
+
+@item_num,@order_num,@stock_num,@manu_code,
+
+@quantity,@total_price,@state
+
+
+
+END
+
+close c_call
+
+deallocate c_call
+
+END
+
+----pruebas del trigger
+
+CREATE TABLE [dbo].[items_error](
+[item_num] [smallint] NOT NULL,
+[order_num] [smallint] NOT NULL,
+[stock_num] [smallint] NOT NULL,
+[manu_code] [char](3) COLLATE Traditional_Spanish_CI_AS NOT
+NULL,
+[quantity] [smallint] NULL DEFAULT ((1)),
+[total_price] [decimal](8, 2) NULL,
+[fecha] [datetime] NULL
+)
+
+select * from items where order_num in(
+select order_num from orders o, customer c
+where o.customer_num=c.customer_num
+and c.state='CA')
+insert into items values (14,1003,9,'ANZ',1,10)
+insert into items values (15,1003,9,'ANZ',1,10)
+insert into items values (16,1003,9,'ANZ',1,10)
+insert into items values (17,1003,9,'ANZ',1,10)
+insert into items values (18,1003,9,'ANZ',1,10)
+select * from items_error
 
 /*
 b. Dada la siguiente vista
